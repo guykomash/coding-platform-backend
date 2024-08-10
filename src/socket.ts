@@ -4,12 +4,14 @@ import { getCodeBlockData } from './controllers/codeblockController';
 // Types
 import { CodeBlockInterface } from './types';
 
-// import { corsOptions } from './config/corsOptions';
+import { corsOptions } from './config/corsOptions';
 import { Server } from 'socket.io';
 import { Server as httpServer } from 'node:http';
 
 export const socket = (server: httpServer) => {
-  const io = new Server(server);
+  const io = new Server(server, {
+    cors: corsOptions,
+  });
 
   // Maps
   let socketIdToRoleRoom: Map<string, { role: string; roomId: string }> =
