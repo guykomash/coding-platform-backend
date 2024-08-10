@@ -16,7 +16,7 @@ export async function getAll(req: Request, res: Response) {
     console.error(err);
     return res
       .status(500)
-      .json({ message: 'Server fecthing all code blocks.' });
+      .json({ message: 'Server error in fecthing all code blocks.' });
   }
 }
 
@@ -43,5 +43,27 @@ export async function getCodeBlockData(codeBlockId: string) {
   } catch (err) {
     console.error(err);
     return;
+  }
+}
+
+export async function getCodeBlock(req: Request, res: Response) {
+  try {
+    const codeBlockId = req.params.codeBlockId;
+    if (!codeBlockId) {
+      return res.status(400).json({ messge: 'no id in params' }).end();
+    }
+    const Codeblock = await CodeBlock.findOne({
+      codeBlockId: codeBlockId,
+    }).exec();
+    if (!CodeBlock) {
+      res.status(204).json({ message: 'No code block found.' }).end();
+    } else {
+      res.status(200).send({ CodeBlock: Codeblock }).end();
+    }
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: 'Server error in fecthing code block.' });
   }
 }

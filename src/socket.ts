@@ -51,7 +51,6 @@ export const socket = (server: httpServer) => {
       socket.join(roomId);
 
       const codeBlock = await getCodeBlock(roomId);
-      socket.emit('initCodeBlock', codeBlock);
 
       let socketIdsInRoom: string[] | undefined = roomIdToSocketIds.get(roomId);
       if (!socketIdsInRoom) {
@@ -93,7 +92,10 @@ export const socket = (server: httpServer) => {
           if (soc.id !== socket.id) {
             console.log('soc.id', soc.id);
 
-            soc.emit('otherCodeChange', { code: code, id: socket.id });
+            soc.emit('otherCodeChange', {
+              otherCode: code,
+              otherId: socket.id,
+            });
           }
         });
       }
