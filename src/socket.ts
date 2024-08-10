@@ -89,12 +89,11 @@ export const socket = (server: httpServer) => {
 
         console.log('socket.id', socket.id);
         const socketsInRoom = await io.in(roomId).fetchSockets();
-        console.log('socketsInRoom', socketsInRoom);
         socketsInRoom.forEach((soc) => {
           if (soc.id !== socket.id) {
             console.log('soc.id', soc.id);
 
-            soc.emit('otherCodeChange', code);
+            soc.emit('otherCodeChange', { code: code, id: socket.id });
           }
         });
       }
