@@ -106,23 +106,15 @@ export const socket = (server: httpServer) => {
       }
     });
 
-    socket.on('codeChange', async (codeChange) => {
+    socket.on('codeChange', (codeChange) => {
       if (codeChange) {
         const { roomId, code } = codeChange;
         socket.to(roomId).emit('codeChange', code);
-
-        const { solution } = (await getCodeBlock(roomId)) || {
-          solution: null,
-        };
-
-        const isSolved = checkSolution(solution, code);
-
-        if (isSolved) {
-          console.log('Code got solved!');
-        }
-        // socket.in to include this socket also.
-        socket.in(roomId).emit('codeSolved', isSolved);
       }
+    });
+
+    socket.on('codeSolved', (roomId) => {
+      socket.to(roomId).emit('codeSolved');
     });
 
     socket.on('disconnect', () => {
