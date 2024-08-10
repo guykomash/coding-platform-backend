@@ -82,10 +82,21 @@ export const socket = (server: httpServer) => {
       }
     });
 
-    socket.on('codeChange', (codeChange) => {
+    socket.on('codeChange', async (codeChange) => {
       if (codeChange) {
         const { roomId, code } = codeChange;
-        socket.to(roomId).emit('codeChange', { code: code });
+        // socket.to(roomId).emit('codeChange', { code: code });
+
+        console.log('socket.id', socket.id);
+        const socketsInRoom = await io.in(roomId).fetchSockets();
+        console.log('socketsInRoom', socketsInRoom);
+        socketsInRoom.forEach((soc) => {
+          if (soc.id !== socket.id) {
+            console.log('soc.id', soc.id);
+
+            soc.emit('otherCodeChange', code);
+          }
+        });
       }
     });
 
