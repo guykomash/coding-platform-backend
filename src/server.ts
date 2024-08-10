@@ -10,7 +10,5 @@ socket(server);
 
 mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB');
-  server.listen(PORT, '0.0.0.0', () =>
-    console.log(`Server is running on port ${PORT}`)
-  );
+  server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 });
