@@ -84,8 +84,8 @@ export const socket = (server: httpServer) => {
 
     socket.on('codeChange', (codeChange) => {
       if (codeChange) {
-        const { roomId, code } = codeChange;
-        socket.to(roomId).emit('codeChange', code);
+        const { roomId, code, id } = codeChange;
+        socket.to(roomId).emit('codeChange', { id: id, code: code });
       }
     });
 
