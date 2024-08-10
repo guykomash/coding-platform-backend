@@ -21,30 +21,6 @@ export const socket = (server: httpServer) => {
 
   let roomIdToCodeBlock: Map<string, CodeBlockInterface> = new Map();
 
-  // Helper Functions.
-  function checkSolution(solution: string | null, code: string): boolean {
-    if (!solution) {
-      console.log('no solution');
-      return false;
-    }
-    try {
-      console.log(solution);
-      console.log('-------------');
-      // evaluate and see if match.
-      const codeEval = eval(code);
-      console.log('codeEval', codeEval);
-      const solutionEval = eval(solution);
-      console.log('solEval', solutionEval);
-      const isSolved =
-        JSON.stringify(solutionEval) === JSON.stringify(codeEval);
-      console.log(isSolved);
-      return isSolved;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
-  }
-
   // maintaining the codeblocks in the map.
   async function getCodeBlock(roomId: string) {
     let savedCodeBlock = roomIdToCodeBlock.get(roomId);
