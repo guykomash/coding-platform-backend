@@ -26,9 +26,6 @@ export async function getCodeBlockData(codeBlockId: string) {
       console.error('getCodeBlockData() : No codeBlockId');
       return;
     }
-
-    // Implement later with db
-    // get the code block (from db) => should be awaited
     const codeBlock = await CodeBlock.findOne({
       codeBlockId: codeBlockId,
     }).exec();

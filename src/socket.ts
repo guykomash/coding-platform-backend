@@ -21,7 +21,9 @@ export const socket = (server: httpServer) => {
 
   let roomIdToCodeBlock: Map<string, CodeBlockInterface> = new Map();
 
-  // maintaining the codeblocks in the map.
+  let roomIdToCode: Map<string, string> = new Map();
+
+  // maintaining the codeblocks in the map : roomIdToCodeBlock
   async function getCodeBlock(roomId: string) {
     let savedCodeBlock = roomIdToCodeBlock.get(roomId);
     if (savedCodeBlock) {
@@ -43,6 +45,7 @@ export const socket = (server: httpServer) => {
 
     // Save code block.
     roomIdToCodeBlock.set(roomId, codeBlock);
+
     return codeBlock;
   }
 
@@ -50,15 +53,21 @@ export const socket = (server: httpServer) => {
     socket.on('joinRoom', async (roomId: string) => {
       socket.join(roomId);
 
-      const codeBlock = await getCodeBlock(roomId);
+      const codeblock = await getCodeBlock(roomId);
 
       let socketIdsInRoom: string[] | undefined = roomIdToSocketIds.get(roomId);
       if (!socketIdsInRoom) {
-        console.log(roomIdToSocketIds);
         // Room is empty. Join room as a  mentor.
         socketIdToRoleRoom.set(socket.id, { role: 'mentor', roomId: roomId });
         socket.emit('role', 'Mentor');
         roomIdToSocketIds.set(roomId, [socket.id]);
+
+        const templateCode = codeblock?.templateCode || '// Happy Coding';
+        roomIdToCode.set(roomId, templateCode);
+
+        //
+        socket.emit('joinCode', templateCode);
+
         console.log(`Mentor ${socket.id} in ${roomId} connected.`);
       } else {
         // Room is not empty. Join room as a student.
@@ -77,6 +86,12 @@ export const socket = (server: httpServer) => {
             roomIdToSocketIds.get(roomId)?.length
           );
           console.log(`Student ${socket.id} in ${roomId} connected. `);
+
+          // send the updated code in the room.
+          const codeInRoom = roomIdToCode.get(roomId);
+          if (codeInRoom) {
+            socket.emit('joinCode', codeInRoom);
+          }
         }
       }
     });
@@ -86,18 +101,18 @@ export const socket = (server: httpServer) => {
         const { roomId, code } = codeChange;
         // socket.to(roomId).emit('codeChange', { code: code });
 
-        console.log('socket.id', socket.id);
         const socketsInRoom = await io.in(roomId).fetchSockets();
         socketsInRoom.forEach((soc) => {
           if (soc.id !== socket.id) {
-            console.log('soc.id', soc.id);
-
             soc.emit('otherCodeChange', {
               otherCode: code,
-              otherId: socket.id,
             });
           }
         });
+
+        // Update code in the room
+        console.log('current code');
+        roomIdToCode.set(roomId, code);
       }
     });
 
@@ -120,6 +135,9 @@ export const socket = (server: httpServer) => {
         // need to notify all sockets in room to go back to home page.
         console.log(`Mentor ${socket.id} in ${roomId} disconnected.`);
         socket.to(roomId).emit('mentorDisconnected');
+
+        // clear the room code.
+        roomIdToCode.delete(roomId);
       } else {
         // role is student
         // check if this is a single student exit, or because mentor leaves.
@@ -137,6 +155,10 @@ export const socket = (server: httpServer) => {
           .to(roomId)
           .emit('studentCount', (socketIdsInRoom?.length || 1) - 1);
       }
+
+      // clear the socket in map
+      socketIdToRoleRoom.delete(socket.id);
+
       socket.leave(roomId);
     });
   });
